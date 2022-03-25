@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>RTM Chat</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+    </head>
+    <body>
+        
+        <form id="form">
+            <input type="text" name="message" />
+        </form>
+
+        <div id="messages"></div>
+
+    </body>
+    <script type="text/javascript" src="agora-rtm-sdk-1.4.4.js"></script>
+    <script type="text/javascript">
+         let appID = "e082c5812649491cbf1eeb6254b146d3"
+         let uid = String(Math.floor(Math.random() * 232))
+         let token = null
+         let channelName = 'main'
+
+         let initiateRTM = async () => {
+             let client = await AgoraRTM.createInstance(appID)
+             await client.login({uid, token})
+
+             const channel = await client.createChannel(channelName)
+             await channel.join()
+
+             let form = document.getElementById('form')
+
+             form.addEventListener('submit', async (e) => {
+                 e.preventDefault()
+                 let message = e.target.message.value
+                 await channel.sendMessage({text:message, type: 'text'})
+                 form.reset()
+
+                 handleMessage({text:message})
+
+             })
+
+             channel.on('ChannelMessage', (message, peerID) => {
+                 console.log('Message:', message)
+                 handleMessage(message)
+             })
+         }
+
+         let handleMessage = async (message) => {
+             let messages = document.getElementById('messages')
+             let messageElement = `<p>${message.text}</p>`
+             messages.insertAdjacentHTML('beforeend', messageElement)
+         }
+
+         initiateRTM()
+
+    </script>
+</html>
